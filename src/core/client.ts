@@ -83,6 +83,12 @@ export class IgApiClient {
   public story = new StoryService(this);
   public insights = new InsightsService(this);
 
+  logger: any;
+
+  constructor(logger?: any) {
+    this.logger = logger ? logger : () => {};
+  }
+
   public destroy() {
     this.request.error$.complete();
     this.request.end$.complete();
