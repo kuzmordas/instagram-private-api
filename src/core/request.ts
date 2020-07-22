@@ -73,7 +73,7 @@ export class Request {
       },
       this.defaults,
     );
-    console.log(options);
+    console.log(JSON.stringify(options));
     Request.requestDebug(`Requesting ${options.method} ${options.url || options.uri || '[could not find url]'}`);
     const response = await this.faultTolerantRequest(options);
     this.updateState(response);
@@ -116,10 +116,12 @@ export class Request {
   public sign(payload: Payload): SignedPost {
     const json = typeof payload === 'object' ? JSON.stringify(payload) : payload;
     const signature = this.signature(json);
-    console.log({
-      ig_sig_key_version: this.client.state.signatureVersion,
-      signed_body: `${signature}.${json}`,
-    });
+    console.log(
+      JSON.stringify({
+        ig_sig_key_version: this.client.state.signatureVersion,
+        signed_body: `${signature}.${json}`,
+      }),
+    );
     return {
       ig_sig_key_version: this.client.state.signatureVersion,
       signed_body: `${signature}.${json}`,
