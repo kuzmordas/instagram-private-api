@@ -56,7 +56,11 @@ export class Request {
     return resolveWithFullResponse ? response : response.body;
   }
 
-  public async send<T = any>(userOptions: Options, onlyCheckHttpStatus?: boolean): Promise<IgResponse<T>> {
+  public async send<T = any>(
+    userOptions: Options,
+    onlyCheckHttpStatus?: boolean,
+    loggerCb?: (x: any) => void,
+  ): Promise<IgResponse<T>> {
     const options = defaultsDeep(
       userOptions,
       {
@@ -73,6 +77,7 @@ export class Request {
       },
       this.defaults,
     );
+    if (loggerCb) loggerCb(options);
     Request.requestDebug(`Requesting ${options.method} ${options.url || options.uri || '[could not find url]'}`);
     const response = await this.faultTolerantRequest(options);
     this.updateState(response);
@@ -112,9 +117,14 @@ export class Request {
       .digest('hex');
   }
 
-  public sign(payload: Payload): SignedPost {
+  public sign(payload: Payload, loggerCb?: (x: any) => void): SignedPost {
     const json = typeof payload === 'object' ? JSON.stringify(payload) : payload;
     const signature = this.signature(json);
+    if (loggerCb)
+      loggerCb({
+        ig_sig_key_version: this.client.state.signatureVersion,
+        signed_body: `${signature}.${json}`,
+      });
     return {
       ig_sig_key_version: this.client.state.signatureVersion,
       signed_body: `${signature}.${json}`,
